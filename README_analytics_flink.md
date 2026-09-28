@@ -169,7 +169,9 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Click **Next**.
     - Provide a name for this policy.
     - Click **Create policy**.
-![IAM Policy](assets/aws_iam_policy_permissions.png)
+
+    ![IAM Policy](assets/aws_iam_policy_permissions.png)
+
 6. Back in **Confluent Cloud Console**:
     - click **Continue**
 7. Create a new role in AWS:
@@ -180,19 +182,25 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Copy the policy from `AWS_IAM_role.json`.
     - Paste this policy into the Custom trust policy editor in the AWS console.
     - Click **Next**.
-    ![IAM Role](assets/aws_iam_role_trusted_entity.png)
+
+      ![IAM Role](assets/aws_iam_role_trusted_entity.png)
+
     - For Add Permissions, select the IAM Policy that you created earlier.
     - Click **Next**.
     - Provide a name for this role.
     - Click **Create role**.
     - Once the role is created, copy the ARN from the Summary section of your AWS role page
-    ![IAM Role Permissions](assets/aws_iam_role_add_permissions.png)
+
+      ![IAM Role Permissions](assets/aws_iam_role_add_permissions.png)
+
 8. Map the role in Confluent:
     - Back in **Confluent Cloud Console**:
       - paste the ARN that you just create for the AWS role.
       - provide a name for this integration.
       - Click **Continue**.
-      ![IAM Mapping](assets/aws_role_confluent_mapping.png)
+
+        ![IAM Mapping](assets/aws_role_confluent_mapping.png)
+
 9. Update the role trust policy in AWS
     - Navigate to **IAM Role** just created in your **AWS Console**.
     - Select the **Trust relationships** tab
@@ -206,12 +214,14 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 
 1. Navigate to Topics in **Confluent Cloud Console**.
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
+
     ![Enable TableFlow](assets/confluent-topics-listing.png)
 
 3. Enable Tableflow
 
     - Choose **Iceberg** as your table format.
     - Click **Configure custom storage**.
+
       ![Custom Storage](assets/confluent-enable-tableflow.png)
 
 4. Choose where to store your Tableflow data
@@ -220,6 +230,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Select the AWS Provider Integration that you created earlier.
     - Enter the Amazon S3 bucket name that you created earlier.
     - Click **Continue**
+
       ![Own Storage](assets/confluent-tableflow-storage.png)
 
 5. Verify Storage Permissions:
@@ -238,14 +249,17 @@ Because the data resides in the Confluent Iceberg REST Catalog, you must generat
 
 1. Navigate to **Tableflow** in **Confluent Cloud Console**.
 2. Copy the `Tableflow Iceberg REST Catalog` `REST Catalog Endpoint`
-    ![Confluent Tableflow](assets/confluent-tableflow.png)
+
+    ![Confluent Tableflow](assets/confluent_tableflow.png)
+
 3. Generate a new API Key and Secret specifically for the Iceberg Catalog.
     - Click **Manage API keys**
     - Click **Add API key**
         - Name: `tableflow_key`
         - Select account: `My account`
         - Select key scope: `Tableflow`
-        ![Confluent Tableflow API Key](assets/confluent_tableflow_api_key.png)
+
+          ![Confluent Tableflow API Key](assets/confluent_tableflow_api_key.png)
 
 4. Copy the following:
     - API Key
