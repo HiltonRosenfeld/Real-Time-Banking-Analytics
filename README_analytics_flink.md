@@ -261,32 +261,58 @@ Because the data resides in the Confluent Iceberg REST Catalog, you must generat
 
           ![Confluent Tableflow API Key](assets/confluent_tableflow_api_key.png)
 
-4. Copy the following:
-    - API Key
-    - API Secret
+4. Copy the following into your .env file:
+    - **API Key**
+    - **API Secret**
 
 ### 5.3 - Register the Confluent Catalog in IBM watsonx.data
 
 Configure watsonx.data environment to look across to Confluent as a external data platform without actually duplicating or importing the storage footprint.
 
-1. Log into your IBM watsonx.data instance console.
-2. Open the Infrastructure manager tab on the navigation side-panel.
-3. Click Add Component and choose Add catalog.
-4. Fill out the catalog creation wizard with these parameters:
-    - Catalog Type: Apache Iceberg
-    - Catalog Target: External REST Catalog (Select this option to use Confluent's endpoint)
-    - REST URI: Paste the Catalog URI copied from Confluent Cloud.
-    - Authentication: Input the API Key and API Secret generated in Step 2.
-5. Provide a memorable catalog name (e.g., confluent_iceberg_stream).
-6. Click Save to establish the connection.
+1. Navigate to the Infrastructure manager tab in your IBM watsonx.data instance console.
+2. Click Add Component and select **Custom** from Data Sources.
+
+    ![watsonx.data add component](assets/watsonx_add_component.png)
+
+3. Enter a display name (e.g., confluent_tableflow).
+4. In the Properties section, add the following properties:
+
+    ```conf
+    connector.name=iceberg 
+    iceberg.catalog.type=REST
+    iceberg.rest.uri=https://tableflow.{CLOUD_REGION}.aws.confluent.cloud/iceberg/catalog/organizations/{ORG_ID}/environments/{ENV_ID}
+    iceberg.rest.auth.type=OAUTH2 
+    iceberg.rest.auth.oauth2.credential={APIKEY}:{SECRET} 
+    hive.s3.aws-access-key={S3_ACCESS_KEY} 
+    hive.s3.aws-secret-key={S3_SECRET_KEY}
+    ```
+
+  - Replace the placeholders:
+
+    - {CLOUD_REGION}: Your Confluent cluster region (e.g., us-east-1)
+    - {ORG_ID}: Your Confluent organization ID
+    - {ENV_ID}: Your Confluent environment ID
+    - {APIKEY}:{SECRET}: Your Tableflow API credentials
+    - {S3_ACCESS_KEY}, {S3_SECRET_KEY}: Your S3 access credentials
+
+5. Tick the **Associate catalog** checkbox, and enter a catalog name (e.g. confluent_tableflow_catalog).
+6. Click **Create**.
+
+    ![watsonx.data configure component](assets/watsonx_configure_component.png)
 
 ### 5.4 - Associate the Catalog with Your Engines
 
-To run SQL queries against your real-time Kafka tables, your query engines need access permissions to this new catalog metadata.
+To run SQL queries against your real-time Confluent tables, your query engines need access permissions to this new catalog metadata.
 
-1. In the Infrastructure manager, locate your newly created confluent_iceberg_stream catalog.
-2. Click the options menu (three dots) next to the catalog and choose Associate engine.
-3. Select your active watsonx.data query engine—such as your Presto or Spark clusters.
+1. In the Infrastructure manager, locate your newly created confluent_tableflow_catalog catalog.
+2. Click the **Manage associations** button that appears when you hover over the catalog.
+
+    ![watsonx.data associate engine](assets/watsonx_manage_associations.png)
+
+3. Select your active watsonx.data query engine, such as your Presto or Spark.
+
+    ![watsonx.data select engine](assets/watsonx_select_associations.png)
+
 4. Confirm the association.
 
 ---

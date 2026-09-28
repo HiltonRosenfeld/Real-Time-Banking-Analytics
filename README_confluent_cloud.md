@@ -87,7 +87,7 @@ echo -n "<api-key>:<api-secret>" | base64
 Linux:
 
 ```sh
-echo -n "ABCDEFGH123456789:XNCIW93I2L1SQPJSJ823K1LS902KLDFMCZPWEO" | base64 -w 0
+echo -n "<api-key>:<api-secret>" | base64 -w 0
 ```
 
 Windows (PowerShell only):
