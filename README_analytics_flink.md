@@ -207,14 +207,17 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 1. Navigate to Topics in **Confluent Cloud Console**.
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
     ![Enable TableFlow](assets/confluent-topics-listing.png)
+
 3. Choose **Iceberg** as your table format.
 4. Click **Configure custom storage**.
     ![Custom Storage](assets/confluent-enable-tableflow.png)
+
 5. Select **Store in your own storage**.
 6. Select the AWS Provider Integration that you created earlier.
 7. Enter the Amazon S3 bucket name that you created earlier.
 8. Click **Continue**
     ![Own Storage](assets/confluent-tableflow-storage.png)
+
 9. Verify Storage Permissions:
    - You **MUST** click on the **AWS IAM Console** link (in order to atcivate the check box below)
    - Check the **I’ve confirmed my IAM role has this permission policy** box
