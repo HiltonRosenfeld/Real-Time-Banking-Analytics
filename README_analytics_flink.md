@@ -6,12 +6,23 @@ This document covers everything needed to run the analytics pipeline: dimension 
 
 ## Prerequisites
 
-- Python 3.12 with the project venv already set up (`./scripts/setup.sh`)
+- Python >=3.10 with the project venv already set up (`./scripts/setup.sh`)
 - `.env` file populated (see [Environment Variables](#environment-variables))
-- AstraDB ods keyspace created and banking data generated (`README_dataset_generator.md`)
-- Confluent Cloud: `banking.transactions` topic exists and the transaction producer is running
-- Confluent Cloud: Flink environment provisioned (Confluent Cloud Console → Environments → Flink)
-- AWS: S3 bucket exists with access policy and access key
+- AstraDB:
+  - Database available
+  - Application token available
+  - Secure Connect Bundle downloaded
+- Confluent Cloud: (`README_confluent_cloud.md`)
+  - Account and Cluster available
+  - API keys generated
+  - `banking.transactions` topic exists
+  - Flink environment provisioned (Confluent Cloud Console → Environments → Flink)
+- AWS (`README_amazon_s3.md`)
+  - S3 bucket exists
+  - Access policy and access keys exist
+- Banking Data: (`README_dataset_generator.md`)
+  - dimension data generated
+  - transactions generating and streaming
 
 ---
 
@@ -23,7 +34,7 @@ Copy `.env.example` to `.env` and fill in every value:
 |---|---|
 | `ASTRA_DB_APPLICATION_TOKEN` | AstraDB application token (`AstraCS:...`) |
 | `ASTRA_SECURE_BUNDLE_PATH` | Absolute path to `secure-connect-<db>.zip` |
-| `ASTRA_KEYSPACE` | Target keyspace (must contain the analytics tables) |
+| `ASTRA_KEYSPACE` | Target keyspace |
 | `KAFKA_BOOTSTRAP_SERVERS` | Confluent Cloud bootstrap server (`host:port`) |
 | `KAFKA_API_KEY` | Confluent Cloud API key |
 | `KAFKA_API_SECRET` | Confluent Cloud API secret |
@@ -31,23 +42,29 @@ Copy `.env.example` to `.env` and fill in every value:
 | `AWS_ACCESS_KEY_ID` | AWS S3 Access key |
 | `AWS_SECRET_ACCESS_KEY` | AWS S3 Secret Access key |
 
-
 ---
 
 ## Step 1 — Define Flink watermark on banking.transactions
 
-Run this once against banking.transactions:
+### Via Confluent Cloud Console (UI)
+
+1. Open **Confluent Cloud Console → SQL Workspaces**.
+2. Click on **Create new workspace**.
+3. Paste the SQL statement.
+4. Click **Run**.
 
 ```sql
 ALTER TABLE `banking.transactions` 
 MODIFY WATERMARK FOR txn_time AS txn_time - INTERVAL '5' SECOND;
 ```
 
+![SQL Worskpace](assets/confluent_sql_workspace.png)
+
 ---
 
 ## Step 2 — Create Kafka Topics
 
-Create the dimension and analytics sink topics in Confluent Cloud before running anything.
+Create the dimension topics in Confluent Cloud before running anything.
 
 **Dimension topics** (compacted, used by Flink lookup joins):
 
@@ -58,13 +75,15 @@ banking.dimensions.customer
 banking.dimensions.employee
 ```
 
-> **Tip:** *Set the dimension topics to `cleanup.policy=compact` so Flink always has the latest value for each key.*
+> **Note:** *In Advanced Settings, set the dimension topics to `cleanup.policy=compact` so Flink always has the latest value for each key.*
+
+![Create Dimension Topics](assets/confluent_create_dimension_topic.png)
 
 ---
 
 ## Step 3 — Load Dimensions into Kafka
 
-Run once (or whenever ODS dimension data changes materially):
+Run once (or whenever dimension data changes materially):
 
 ```bash
 # Activate virtual environemnt
@@ -78,7 +97,6 @@ This script:
 
 1. Connects to AstraDB ODS and reads all rows from `account`, `branch`, `customer`, `employee`.
 2. Publishes each row as an AVRO message to the corresponding `banking.dimensions.*` topic, keyed by the primary key UUID.
-3. Publishes `account_active` seed events to `analytics.customer_quarterly_summary` for each active account — these seed the `customer_account_count` counter table.
 
 Re-run this script after bulk dimension changes (e.g. new branch added, customer data refresh). Individual real-time changes should be published directly to the dimension topics by the upstream system.
 
@@ -106,13 +124,13 @@ Each SQL file in `src/flink/` is a self-contained Flink SQL statement. Deploy th
 
 | File | Input | Joins | Output topic |
 |---|---|---|---|
-| [`q1_txn_by_account.sql`](src/flink/q1_txn_by_account.sql) | `banking.transactions` | none | `analytics.transactions_by_account` |
-| [`q2_high_value_hourly.sql`](src/flink/q2_high_value_hourly.sql) | `banking.transactions` | none | `analytics.high_value_transaction_hourly` |
-| [`q3_high_value_by_city.sql`](src/flink/q3_high_value_by_city.sql) | `banking.transactions` | account → branch | `analytics.high_value_transaction_by_city` |
-| [`q4_withdrawal_by_employee.sql`](src/flink/q4_withdrawal_by_employee.sql) | `banking.transactions` | employee → branch | `analytics.withdrawal_transaction_by_employee` |
-| [`q5a_customer_account_count.sql`](src/flink/q5a_customer_account_count.sql) | `banking.transactions` | account | `analytics.customer_account_count` |
-| [`q5b_customer_quarterly.sql`](src/flink/q5b_customer_quarterly.sql) | `banking.transactions` | account | `analytics.customer_quarterly_summary` |
-| [`q6_branch_daily_rollup.sql`](src/flink/q6_branch_daily_rollup.sql) | `banking.transactions` | account | `analytics.branch_daily_rollup` |
+| [`q1_txn_by_account.sql`](flink/q1_txn_by_account.sql) | `banking.transactions` | none | `analytics.transactions_by_account` |
+| [`q2_high_value_hourly.sql`](flink/q2_high_value_hourly.sql) | `banking.transactions` | none | `analytics.high_value_transaction_hourly` |
+| [`q3_high_value_by_city.sql`](flink/q3_high_value_by_city.sql) | `banking.transactions` | account → branch | `analytics.high_value_transaction_by_city` |
+| [`q4_withdrawal_by_employee.sql`](flink/q4_withdrawal_by_employee.sql) | `banking.transactions` | employee → branch | `analytics.withdrawal_transaction_by_employee` |
+| [`q5a_customer_account_count.sql`](flink/q5a_customer_account_count.sql) | `banking.transactions` | none | `analytics.customer_account_count` |
+| [`q5b_customer_quarterly.sql`](flink/q5b_customer_quarterly.sql) | `banking.transactions` | account | `analytics.customer_quarterly_summary` |
+| [`q6_branch_daily_rollup.sql`](flink/q6_branch_daily_rollup.sql) | `banking.transactions` | account | `analytics.branch_daily_rollup` |
 
 ---
 
@@ -122,12 +140,84 @@ The easiest way to integrate the two platforms is through Confluent Tableflow. T
 
 ### 1. Enable Tableflow in Confluent Cloud
 
-Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats.
+Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats. Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using AWS S3 with IAM AssumeRole.
 
-1. Go to Topics in your Confluent Cloud Console.
-2. Click on Enable Tableflow for each of the topics.
-3. Choose Iceberg as your table format.
-4. Select Use Confluent storage.
+This will require working in both the AWS Console and the Confluent Cloud Console
+
+#### Create an S3 bucket
+
+1. Navigate to **S3** in your **AWS Conslole**
+2. Click on **Create bucket**
+   - **Bucket type:** General purpose
+   - **Bucket namespace:** Account Regional namespace (recommended)
+   - **Bucket name prefix:** tableflow-data (for example)
+   - **Object Ownership:** ACLs disabled (recommended)
+
+#### Add an S3 Provider Integration
+
+1. Navigate to **Integrations** within your environment in **Confluent Cloud Console**.
+2. Click **Add Integration**
+3. Select **AWS IAM role**
+4. Select **New role**
+5. Click **Continue**
+6. Create an IAM permission policy in AWS:
+   This IAM policy will grant Confluent access to your AWS S3 bucket.
+    - Navigate to **IAM Policies** in your **AWS Console**
+    - Click Create policy
+    - Select Policy Editor JSON
+    - Edit the file `AWS_IAM_policy.json`, replace \<bucket-name\> with the full name of the bucket you created above.
+    - Paste this policy into the policy editor in the AWS console.
+    - Click Next.
+    - Provide a name for this policy.
+    - Click Create policy.
+![IAM Policy](assets/aws_iam_policy_permissions.png)
+7. Back in **Confluent Cloud Console**, click **Continue**
+8. Create an IAM role in AWS:
+   The above policy will be associated with this role.
+    - Navigate to **IAM Roles** in your **AWS Console**
+    - Click Create role
+    - For the Trusted entity type, select Custom trust policy
+    - Copy the policy from `AWS_IAM_role.json`.
+    - Paste this policy into the Custom trust policy editor in the AWS console.
+    - Click Next
+    ![IAM Role](assets/aws_iam_role_trusted_entity.png)
+    - For Add Permissions, select the IAM Policy that you created earlier.
+    - Click Next.
+    - Provide a name for this role.
+    - Click Create role.
+    - Once the role is created, copy the ARN from the Summary section of your AWS role page
+    ![IAM Role Permissions](assets/aws_iam_role_add_permissions.png)
+9. Map the role in **Confluent Cloud Console**:
+    - paste the ARN that you just create for the AWS role.
+    - provide a name for this integration.
+    - Click Continue.
+    ![IAM Mapping](assets/aws_role_confluent_mapping.png)
+10. Update the role trust policy in AWS
+    - Navigate to **IAM Role** just created in your **AWS Console**.
+    - Select the Trust relationships tab
+    - Click Edit trust policy
+    - Replace the policy with the new policy generated from Confluent.
+    - Click Update policy
+11. Back in **Confluent Cloud Console**, click **Continue**
+
+#### Activate TableFlow
+
+1. Navigate to Topics in **Confluent Cloud Console**.
+2. Click on **Enable Tableflow** for each of the *analytics* topics.
+![Enable TableFlow](assets/confluent-topics-listing.png)
+3. Choose **Iceberg** as your table format.
+4. Select **Configure custom storage**.
+![Custom Storage](assets/confluent-enable-tableflow.png)
+5. Select **Store in your own storage**.
+6. Select the AWS Provider Integration that you created earlier.
+7. Enter the Amazon S3 bucket name that you created earlier.
+8. Click **Continue**
+![Own Storage](assets/confluent-tableflow-storage.png)
+9. Verify Storage Permissions:
+   - You **MUST** click on the **AWS IAM Console** link (in order to atcivate the check box below)
+   - Check the **I’ve confirmed my IAM role has this permission policy** box
+10. Click **Continue**
+11. Clikc **Launch**
 
 ### 2: Generate Confluent Iceberg Catalog Credentials
 

@@ -31,9 +31,10 @@ to a real record.
 ## Setup
 
 ```bash
-cp .env.example .env
-# Edit .env and fill in the values you need
 ./scripts/setup.sh
+
+# Edit .env and fill in the values you need
+cp .env.example .env
 ```
 
 ### Environment Variables

@@ -20,9 +20,21 @@ You will receive $400 free credit in your Confluent account. This credit expires
 
 ## Create a cluster and add a topic
 
-### Step 1: Create a Kafka cluster in Confluent Cloud
+### Step 1: Create a Confluent Cloud account
 
 1. Sign in to [Confluent Cloud](https://confluent.cloud).
+2. Do not immediately create a cluster, as we will bypass the credit card requirments:
+3. Bypass Payment Details
+    - Navigate to **Billing and Payment**
+    - Select the **Payment details and contacts** tab
+    - Click on the **+ Promo Code** link at the bottom of the page
+    - Enter the promo code **CONFLUENTDEV1**
+
+![Billing](assets/confluent_billing.png)
+
+### Step 2: Create a Kafka cluster
+
+1. Navigate to **Home**
 2. Click Add cluster.
 3. Select an environment to use: **default**
 4. Configure the cluster:
@@ -31,14 +43,10 @@ You will receive $400 free credit in your Confluent account. This credit expires
     - Provider and region: your choice
     - Uptime SLA: **99.9%** (will consume less of your free credits)
 5. Click **Launch Cluster**
-6. Bypass Payment Details
-    - When you reach the billing or credit card input screen, look for the option to input a promotional code.
-    - Enter the promo code **CONFLUENTDEV1**
-    - Select the "Skip Payment" or bypass option at the bottom of the screen.
 
 ![Create Cluster](assets/create_cluster.png)
 
-### Step 2: Create a Kafka topic
+### Step 3: Create a Kafka topic
 
 1. From the navigation menu, click **Topics**, and then click **Create topic**.
     - Topic name: “banking.transactions”
