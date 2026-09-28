@@ -138,13 +138,13 @@ Each SQL file in `src/flink/` is a self-contained Flink SQL statement. Deploy th
 
 The easiest way to integrate WatsonX.Data and Confluent is through Confluent Tableflow. Tableflow automatically materializes Kafka topics into Iceberg open-table formats residing in your cloud storage or in Confluent storage. For this solution we will use Amazon S3.
 
-### 1: Enable Tableflow in Confluent Cloud
+### 5.1 - Enable Tableflow in Confluent Cloud
 
 Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats. Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using Amazon S3 with IAM AssumeRole.
 
 This will require working in both the AWS Console and the Confluent Cloud Console
 
-#### 1.1: Create an S3 bucket
+#### 5.1.1 - Create an S3 bucket
 
 1. Navigate to **S3** in your **AWS Console**
 2. Click on **Create bucket**
@@ -153,7 +153,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
    - **Bucket name prefix:** tableflow-data (for example)
    - **Object Ownership:** ACLs disabled (recommended)
 
-#### 1.2: Add an S3 Provider Integration
+#### 5.1.2 - Add an S3 Provider Integration
 
 1. Navigate to **Integrations** within your environment in **Confluent Cloud Console**.
 2. Click **Add Integration**
@@ -202,7 +202,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 10. Back in **Confluent Cloud Console**:
     - click **Continue**
 
-#### 1.3: Activate TableFlow
+#### 5.1.3 - Activate TableFlow
 
 1. Navigate to Topics in **Confluent Cloud Console**.
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
@@ -210,29 +210,29 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 
 3. Enable Tableflow
 
-  - Choose **Iceberg** as your table format.
-  - Click **Configure custom storage**.
-  ![Custom Storage](assets/confluent-enable-tableflow.png)
+    - Choose **Iceberg** as your table format.
+    - Click **Configure custom storage**.
+      ![Custom Storage](assets/confluent-enable-tableflow.png)
 
 4. Choose where to store your Tableflow data
 
-  - Select **Store in your own storage**.
-  - Select the AWS Provider Integration that you created earlier.
-  - Enter the Amazon S3 bucket name that you created earlier.
-  - Click **Continue**
-    ![Own Storage](assets/confluent-tableflow-storage.png)
+    - Select **Store in your own storage**.
+    - Select the AWS Provider Integration that you created earlier.
+    - Enter the Amazon S3 bucket name that you created earlier.
+    - Click **Continue**
+      ![Own Storage](assets/confluent-tableflow-storage.png)
 
 5. Verify Storage Permissions:
 
-  - You **MUST** click on the **AWS IAM Console** link (in order to atcivate the check box below)
-  - Check the **I’ve confirmed my IAM role has this permission policy** box
-  - Click **Continue**
+    - You **MUST** click on the **AWS IAM Console** link (in order to atcivate the check box below)
+    - Check the **I’ve confirmed my IAM role has this permission policy** box
+    - Click **Continue**
 
 6. Click **Launch**
 
 7. Repeat this process for each of the *analytics* topics (topics starting with *analytics*).
 
-### 2: Generate Confluent Iceberg Catalog Credentials
+### 5.2 - Generate Confluent Iceberg Catalog Credentials
 
 Because the data resides in the Confluent Iceberg REST Catalog, you must generate access details so watsonx.data can look up the table layouts.
 
@@ -248,7 +248,7 @@ Because the data resides in the Confluent Iceberg REST Catalog, you must generat
     - API Key
     - API Secret
 
-### 3: Register the Confluent Catalog in IBM watsonx.data
+### 5.3 - Register the Confluent Catalog in IBM watsonx.data
 
 Configure watsonx.data environment to look across to Confluent as a external data platform without actually duplicating or importing the storage footprint.
 
@@ -263,7 +263,7 @@ Configure watsonx.data environment to look across to Confluent as a external dat
 5. Provide a memorable catalog name (e.g., confluent_iceberg_stream).
 6. Click Save to establish the connection.
 
-### 4: Associate the Catalog with Your Engines
+### 5.4 - Associate the Catalog with Your Engines
 
 To run SQL queries against your real-time Kafka tables, your query engines need access permissions to this new catalog metadata.
 
