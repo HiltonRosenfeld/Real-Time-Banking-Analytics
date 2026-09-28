@@ -222,7 +222,8 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Choose **Iceberg** as your table format.
     - Click **Configure custom storage**.
 
-      ![Custom Storage](assets/confluent-enable-tableflow.png)
+      <img src="assets/confluent-enable-tableflow.png" alt="Custom Storage" width="250">
+
 
 4. Choose where to store your Tableflow data
 
@@ -259,7 +260,7 @@ Because the data resides in the Confluent Iceberg REST Catalog, you must generat
         - Select account: `My account`
         - Select key scope: `Tableflow`
 
-          ![Confluent Tableflow API Key](assets/confluent_tableflow_api_key.png)
+          <img src="assets/confluent_tableflow_api_key.png" alt="Confluent Tableflow API Key" width="370">
 
 4. Copy the following into your .env file:
     - **API Key**
@@ -307,17 +308,21 @@ To run SQL queries against your real-time Confluent tables, your query engines n
 1. In the Infrastructure manager, locate your newly created confluent_tableflow_catalog catalog.
 2. Click the **Manage associations** button that appears when you hover over the catalog.
 
-    ![watsonx.data associate engine](assets/watsonx_manage_associations.png)
+    <img src="assets/watsonx_manage_associations.png" alt="watsonx.data associate engine" width="210">
 
 3. Select your active watsonx.data query engine, such as your Presto or Spark.
 
-    ![watsonx.data select engine](assets/watsonx_select_associations.png)
+    <img src="assets/watsonx_select_associations.png" alt="watsonx.data select engine" width="425">
 
 4. Confirm the association.
 
 ---
 
 ## Querying the Analytics Tables
+
+1. Navigate to **Query workspace** in watsonx.data.
+2. Select your Presto engine from the engine dropdown.
+3. Run queries against your remote Tableflow tables:
 
 ### Q1 — All transactions for an account in the last 30 days
 
