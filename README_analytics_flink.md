@@ -236,14 +236,17 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 
 Because the data resides in the Confluent Iceberg REST Catalog, you must generate access details so watsonx.data can look up the table layouts.
 
-1. In Confluent Cloud, navigate to Tableflow
-2. Copy the `API Access` `REST Catalog Endpoint`
+1. Navigate to **Tableflow** in **Confluent Cloud Console**.
+2. Copy the `Tableflow Iceberg REST Catalog` `REST Catalog Endpoint`
+    ![Confluent Tableflow](assets/confluent-tableflow.png)
 3. Generate a new API Key and Secret specifically for the Iceberg Catalog.
-    - Click `Create/View API keys`
-    - Click `Add API key`
+    - Click **Manage API keys**
+    - Click **Add API key**
         - Name: `tableflow_key`
         - Select account: `My account`
         - Select key scope: `Tableflow`
+        ![Confluent Tableflow API Key](assets/confluent_tableflow_api_key.png)
+
 4. Copy the following:
     - API Key
     - API Secret
