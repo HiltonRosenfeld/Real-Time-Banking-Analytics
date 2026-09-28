@@ -39,8 +39,8 @@ Copy `.env.example` to `.env` and fill in every value:
 | `KAFKA_API_KEY` | Confluent Cloud API key |
 | `KAFKA_API_SECRET` | Confluent Cloud API secret |
 | `KAFKA_TOPIC` | Source transaction topic (default: `banking.transactions`) |
-| `AWS_ACCESS_KEY_ID` | AWS S3 Access key |
-| `AWS_SECRET_ACCESS_KEY` | AWS S3 Secret Access key |
+| `AWS_ACCESS_KEY_ID` | Amazon S3 Access key |
+| `AWS_SECRET_ACCESS_KEY` | Amazon S3 Secret Access key |
 
 ---
 
@@ -136,71 +136,73 @@ Each SQL file in `src/flink/` is a self-contained Flink SQL statement. Deploy th
 
 ## Step 5 — Confluent Tableflow + Zero-Copy Data Federation
 
-The easiest way to integrate the two platforms is through Confluent Tableflow. Tableflow automatically materializes Kafka topics into Iceberg open-table formats residing in your cloud storage or in Confluent storage.
+The easiest way to integrate WatsonX.Data and Confluent is through Confluent Tableflow. Tableflow automatically materializes Kafka topics into Iceberg open-table formats residing in your cloud storage or in Confluent storage. For this solution we will use Amazon S3.
 
-### 1. Enable Tableflow in Confluent Cloud
+### 1: Enable Tableflow in Confluent Cloud
 
-Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats. Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using AWS S3 with IAM AssumeRole.
+Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats. Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using Amazon S3 with IAM AssumeRole.
 
 This will require working in both the AWS Console and the Confluent Cloud Console
 
-#### Create an S3 bucket
+#### 1.1: Create an S3 bucket
 
-1. Navigate to **S3** in your **AWS Conslole**
+1. Navigate to **S3** in your **AWS Console**
 2. Click on **Create bucket**
    - **Bucket type:** General purpose
    - **Bucket namespace:** Account Regional namespace (recommended)
    - **Bucket name prefix:** tableflow-data (for example)
    - **Object Ownership:** ACLs disabled (recommended)
 
-#### Add an S3 Provider Integration
+#### 1.2: Add an S3 Provider Integration
 
 1. Navigate to **Integrations** within your environment in **Confluent Cloud Console**.
 2. Click **Add Integration**
-3. Select **AWS IAM role**
-4. Select **New role**
-5. Click **Continue**
-6. Create an IAM permission policy in AWS:
-   This IAM policy will grant Confluent access to your AWS S3 bucket.
+3. Add integration details: Select **AWS IAM role**
+4. Configure role in AWS: Select **New role**
+6. Create permission policy in AWS:
+   This IAM policy will grant Confluent access to your Amazon S3 bucket.
     - Navigate to **IAM Policies** in your **AWS Console**
-    - Click Create policy
-    - Select Policy Editor JSON
+    - Click **Create policy**
+    - Select **Policy Editor JSON**
     - Edit the file `AWS_IAM_policy.json`, replace \<bucket-name\> with the full name of the bucket you created above.
     - Paste this policy into the policy editor in the AWS console.
-    - Click Next.
+    - Click **Next**.
     - Provide a name for this policy.
-    - Click Create policy.
+    - Click **Create policy**.
 ![IAM Policy](assets/aws_iam_policy_permissions.png)
-7. Back in **Confluent Cloud Console**, click **Continue**
-8. Create an IAM role in AWS:
+7. Back in **Confluent Cloud Console**:
+    - click **Continue**
+8. Create a new role in AWS:
    The above policy will be associated with this role.
     - Navigate to **IAM Roles** in your **AWS Console**
-    - Click Create role
-    - For the Trusted entity type, select Custom trust policy
+    - Click **Create role**
+    - For the Trusted entity type, select **Custom trust policy**
     - Copy the policy from `AWS_IAM_role.json`.
     - Paste this policy into the Custom trust policy editor in the AWS console.
-    - Click Next
+    - Click **Next**.
     ![IAM Role](assets/aws_iam_role_trusted_entity.png)
     - For Add Permissions, select the IAM Policy that you created earlier.
-    - Click Next.
+    - Click **Next**.
     - Provide a name for this role.
-    - Click Create role.
+    - Click **Create role**.
     - Once the role is created, copy the ARN from the Summary section of your AWS role page
     ![IAM Role Permissions](assets/aws_iam_role_add_permissions.png)
-9. Map the role in **Confluent Cloud Console**:
-    - paste the ARN that you just create for the AWS role.
-    - provide a name for this integration.
-    - Click Continue.
-    ![IAM Mapping](assets/aws_role_confluent_mapping.png)
+9. Map the role in Confluent:
+    - Back in **Confluent Cloud Console**:
+      - paste the ARN that you just create for the AWS role.
+      - provide a name for this integration.
+      - Click **Continue**.
+      ![IAM Mapping](assets/aws_role_confluent_mapping.png)
 10. Update the role trust policy in AWS
     - Navigate to **IAM Role** just created in your **AWS Console**.
-    - Select the Trust relationships tab
-    - Click Edit trust policy
+    - Select the **Trust relationships** tab
+    - Click **Edit trust policy**
     - Replace the policy with the new policy generated from Confluent.
-    - Click Update policy
-11. Back in **Confluent Cloud Console**, click **Continue**
+    - Click **Update policy**
+11. Back in **Confluent Cloud Console**:
+    - click **Continue**
 
-#### Activate TableFlow
+#### 1.3: Activate TableFlow
 
 1. Navigate to Topics in **Confluent Cloud Console**.
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
@@ -217,7 +219,8 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
    - You **MUST** click on the **AWS IAM Console** link (in order to atcivate the check box below)
    - Check the **I’ve confirmed my IAM role has this permission policy** box
 10. Click **Continue**
-11. Clikc **Launch**
+11. Click **Launch**
+12. Repeat this process for each of the *analytics* topics (topics starting with *analytics*).
 
 ### 2: Generate Confluent Iceberg Catalog Credentials
 
