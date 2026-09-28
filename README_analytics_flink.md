@@ -159,7 +159,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 2. Click **Add Integration**
 3. Add integration details: Select **AWS IAM role**
 4. Configure role in AWS: Select **New role**
-6. Create permission policy in AWS:
+5. Create permission policy in AWS:
    This IAM policy will grant Confluent access to your Amazon S3 bucket.
     - Navigate to **IAM Policies** in your **AWS Console**
     - Click **Create policy**
@@ -170,9 +170,9 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Provide a name for this policy.
     - Click **Create policy**.
 ![IAM Policy](assets/aws_iam_policy_permissions.png)
-7. Back in **Confluent Cloud Console**:
+6. Back in **Confluent Cloud Console**:
     - click **Continue**
-8. Create a new role in AWS:
+7. Create a new role in AWS:
    The above policy will be associated with this role.
     - Navigate to **IAM Roles** in your **AWS Console**
     - Click **Create role**
@@ -187,34 +187,34 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Click **Create role**.
     - Once the role is created, copy the ARN from the Summary section of your AWS role page
     ![IAM Role Permissions](assets/aws_iam_role_add_permissions.png)
-9. Map the role in Confluent:
+8. Map the role in Confluent:
     - Back in **Confluent Cloud Console**:
       - paste the ARN that you just create for the AWS role.
       - provide a name for this integration.
       - Click **Continue**.
       ![IAM Mapping](assets/aws_role_confluent_mapping.png)
-10. Update the role trust policy in AWS
+9. Update the role trust policy in AWS
     - Navigate to **IAM Role** just created in your **AWS Console**.
     - Select the **Trust relationships** tab
     - Click **Edit trust policy**
     - Replace the policy with the new policy generated from Confluent.
     - Click **Update policy**
-11. Back in **Confluent Cloud Console**:
+10. Back in **Confluent Cloud Console**:
     - click **Continue**
 
 #### 1.3: Activate TableFlow
 
 1. Navigate to Topics in **Confluent Cloud Console**.
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
-![Enable TableFlow](assets/confluent-topics-listing.png)
+    ![Enable TableFlow](assets/confluent-topics-listing.png)
 3. Choose **Iceberg** as your table format.
-4. Select **Configure custom storage**.
-![Custom Storage](assets/confluent-enable-tableflow.png)
+4. Click **Configure custom storage**.
+    ![Custom Storage](assets/confluent-enable-tableflow.png)
 5. Select **Store in your own storage**.
 6. Select the AWS Provider Integration that you created earlier.
 7. Enter the Amazon S3 bucket name that you created earlier.
 8. Click **Continue**
-![Own Storage](assets/confluent-tableflow-storage.png)
+    ![Own Storage](assets/confluent-tableflow-storage.png)
 9. Verify Storage Permissions:
    - You **MUST** click on the **AWS IAM Console** link (in order to atcivate the check box below)
    - Check the **I’ve confirmed my IAM role has this permission policy** box
