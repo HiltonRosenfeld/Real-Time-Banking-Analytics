@@ -33,12 +33,18 @@ Copy `.env.example` to `.env` and fill in every value:
 | Variable | Description |
 |---|---|
 | `ASTRA_DB_APPLICATION_TOKEN` | AstraDB application token (`AstraCS:...`) |
-| `ASTRA_SECURE_BUNDLE_PATH` | Absolute path to `secure-connect-<db>.zip` |
-| `ASTRA_KEYSPACE` | Target keyspace |
-| `KAFKA_BOOTSTRAP_SERVERS` | Confluent Cloud bootstrap server (`host:port`) |
-| `KAFKA_API_KEY` | Confluent Cloud API key |
-| `KAFKA_API_SECRET` | Confluent Cloud API secret |
-| `KAFKA_TOPIC` | Source transaction topic (default: `banking.transactions`) |
+| `ASTRA_SECURE_BUNDLE_PATH` | Absolute path to Astra DB Secure Connect Bundle (`secure-connect-<db>.zip`) |
+| `ASTRA_KEYSPACE` | Astra DB Target keyspace |
+| `KAFKA_BOOTSTRAP_SERVERS` | Confluent Cloud REST bootstrap server (`host:port`) |
+| `KAFKA_API_KEY` | Confluent Cloud REST API key |
+| `KAFKA_API_SECRET` | Confluent Cloud REST API secret |
+| `KAFKA_TOPIC` | Confluent Cloud transaction topic (default: `banking.transactions`) |
+| `TABLEFLOW_ENDPOINT` | Confluent Cloud Tableflow API endpoint |
+| `TABLEFLOW_API_KEY` | Confluent Cloud Tableflow API key |
+| `TABLEFLOW_API_SECRET` | Confluent Cloud Tableflow API secret |
+| `SCHEMA_REGISTRY_URL` | Confluent Cloud Schema Registry API endpoint |
+| `SCHEMA_REGISTRY_API_KEY` | Confluent Cloud Schema Registry API key |
+| `SCHEMA_REGISTRY_API_SECRET` | Confluent Cloud Schema Registry API secret |
 | `AWS_ACCESS_KEY_ID` | Amazon S3 Access key |
 | `AWS_SECRET_ACCESS_KEY` | Amazon S3 Secret Access key |
 
@@ -144,16 +150,7 @@ Configure Confluent Cloud to automatically materialize your streaming Kafka topi
 
 This will require working in both the AWS Console and the Confluent Cloud Console
 
-#### 5.1.1 - Create an S3 bucket
-
-1. Navigate to **S3** in your **AWS Console**
-2. Click on **Create bucket**
-   - **Bucket type:** General purpose
-   - **Bucket namespace:** Account Regional namespace (recommended)
-   - **Bucket name prefix:** tableflow-data (for example)
-   - **Object Ownership:** ACLs disabled (recommended)
-
-#### 5.1.2 - Add an S3 Provider Integration
+#### 5.1.1 - Add an S3 Provider Integration
 
 1. Navigate to **Integrations** within your environment in **Confluent Cloud Console**.
 2. Click **Add Integration**
@@ -164,7 +161,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
     - Navigate to **IAM Policies** in your **AWS Console**
     - Click **Create policy**
     - Select **Policy Editor JSON**
-    - Edit the file `AWS_IAM_policy.json`, replace \<bucket-name\> with the full name of the bucket you created above.
+    - Edit the file `AWS_IAM_policy.json`, replace \<bucket-name\> with the full name of the bucket you created earlier.
     - Paste this policy into the policy editor in the AWS console.
     - Click **Next**.
     - Provide a name for this policy.
@@ -244,29 +241,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 
 7. Repeat this process for each of the *analytics* topics (topics starting with *analytics*).
 
-### 5.2 - Generate Confluent Iceberg Catalog Credentials
-
-Because the data resides in the Confluent Iceberg REST Catalog, you must generate access details so watsonx.data can look up the table layouts.
-
-1. Navigate to **Tableflow** in **Confluent Cloud Console**.
-2. Copy the `Tableflow Iceberg REST Catalog` `REST Catalog Endpoint`
-
-    ![Confluent Tableflow](assets/confluent_tableflow.png)
-
-3. Generate a new API Key and Secret specifically for the Iceberg Catalog.
-    - Click **Manage API keys**
-    - Click **Add API key**
-        - Name: `tableflow_key`
-        - Select account: `My account`
-        - Select key scope: `Tableflow`
-
-          <img src="assets/confluent_tableflow_api_key.png" alt="Confluent Tableflow API Key" width="370">
-
-4. Copy the following into your .env file:
-    - **API Key**
-    - **API Secret**
-
-### 5.3 - Register the Confluent Catalog in IBM watsonx.data
+### 5.2 - Register the Confluent Catalog in IBM watsonx.data
 
 Configure watsonx.data environment to look across to Confluent as a external data platform without actually duplicating or importing the storage footprint.
 
@@ -279,21 +254,19 @@ Configure watsonx.data environment to look across to Confluent as a external dat
 4. In the Properties section, add the following properties:
 
     ```conf
-    connector.name=iceberg 
+    connector.name=iceberg
     iceberg.catalog.type=REST
-    iceberg.rest.uri=https://tableflow.{CLOUD_REGION}.aws.confluent.cloud/iceberg/catalog/organizations/{ORG_ID}/environments/{ENV_ID}
-    iceberg.rest.auth.type=OAUTH2 
-    iceberg.rest.auth.oauth2.credential={APIKEY}:{SECRET} 
-    hive.s3.aws-access-key={S3_ACCESS_KEY} 
+    iceberg.rest.uri={TABLEFLOW_ENDPOINT}
+    iceberg.rest.auth.type=OAUTH2
+    iceberg.rest.auth.oauth2.credential={APIKEY}:{SECRET}
+    hive.s3.aws-access-key={S3_ACCESS_KEY}
     hive.s3.aws-secret-key={S3_SECRET_KEY}
     ```
 
   - Replace the placeholders:
 
-    - {CLOUD_REGION}: Your Confluent cluster region (e.g., us-east-1)
-    - {ORG_ID}: Your Confluent organization ID
-    - {ENV_ID}: Your Confluent environment ID
-    - {APIKEY}:{SECRET}: Your Tableflow API credentials
+    - {TABLEFLOW_ENDPOINT}: Your Confluent Tableflow Iceberg REST Catalog Endpoint
+    - {APIKEY}:{SECRET}: Your Confluent Tableflow API credentials
     - {S3_ACCESS_KEY}, {S3_SECRET_KEY}: Your S3 access credentials
 
 5. Tick the **Associate catalog** checkbox, and enter a catalog name (e.g. confluent_tableflow_catalog).
@@ -301,7 +274,7 @@ Configure watsonx.data environment to look across to Confluent as a external dat
 
     ![watsonx.data configure component](assets/watsonx_configure_component.png)
 
-### 5.4 - Associate the Catalog with Your Engines
+### 5.3 - Associate the Catalog with Your Engines
 
 To run SQL queries against your real-time Confluent tables, your query engines need access permissions to this new catalog metadata.
 
@@ -323,6 +296,8 @@ To run SQL queries against your real-time Confluent tables, your query engines n
 1. Navigate to **Query workspace** in watsonx.data.
 2. Select your Presto engine from the engine dropdown.
 3. Run queries against your remote Tableflow tables:
+
+![watsonx.data Query Workspace](assets/watsonx_query_workspace.png)
 
 ### Q1 — All transactions for an account in the last 30 days
 

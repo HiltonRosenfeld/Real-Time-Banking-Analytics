@@ -39,9 +39,16 @@ Features:
 
 ### Confluent Cloud
 
-See [`README_confluent_cloud.md`](README_confluent_cloud.md) for instructions on regsitering for and configuring your Confluent instance.
+See [`README_confluent_cloud.md`](README_confluent_cloud.md) for instructions on registering for and configuring your Confluent instance.
 
-### Data Flow
+### Amazon S3 and IAM
 
-See [`README_analytics_flink.md`](README_analytics_flink.md) for full step-by-step instructions:
-environment variables, topic creation, dimension loading, Flink job deployment, and sink worker setup.
+See [`README_amazon_s3.md`](README_amazon_s3.md) for instructions on configuring your S3 bucket and associated IAM permisssions.
+
+### Banking Data
+
+See [`README_dataset_generator.md`](README_dataset_generator.md) for instructions on generating banking dimension data and transactions.
+
+### Data Processing
+
+See [`README_analytics_flink.md`](README_analytics_flink.md) for instructions on configuring Confluent environment variables, topic creation, dimension loading, Flink job deployment, and sink worker setup.

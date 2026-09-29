@@ -10,21 +10,18 @@ This quick start gets you up and running with Confluent Cloud:
 2. how to use Confluent Cloud to create topics, and produce and consume data to and from the cluster.
 3. how to use Confluent Cloud for Apache Flink to run queries on the data using SQL syntax.
 
-## Deploy a Free Cluster on Confluent Cloud
+## 1 - Deploy a Free Cluster on Confluent Cloud
 
 You will receive $400 free credit in your Confluent account. This credit expires after 30 days. Your free trial ends when you use all the credit or when the credit expires, whichever comes first.
 
-### Sign Up for Confluent Cloud
+### 1.1 - Sign Up for Confluent Cloud
 
-- Complete the signup process - [Signup](https://www.confluent.io/get-started/).
+1. Complete the signup process - [Signup](https://www.confluent.io/get-started/).
+2. Do not immediately create a cluster, as we will bypass the credit card requirements with a special promo code.
 
-## Create a cluster and add a topic
+### 1.2 - Register Special Promo Code
 
-### Step 1: Create a Confluent Cloud account
-
-1. Sign in to [Confluent Cloud](https://confluent.cloud).
-2. Do not immediately create a cluster, as we will bypass the credit card requirments:
-3. Bypass Payment Details
+1. Bypass Payment Details
     - Navigate to **Billing and Payment**
     - Select the **Payment details and contacts** tab
     - Click on the **+ Promo Code** link at the bottom of the page
@@ -32,7 +29,9 @@ You will receive $400 free credit in your Confluent account. This credit expires
 
 ![Billing](assets/confluent_billing.png)
 
-### Step 2: Create a Kafka cluster
+## 2 - Create a cluster and add a topic
+
+### 2.1 - Create a Kafka cluster
 
 1. Navigate to **Home**
 2. Click Add cluster.
@@ -46,7 +45,7 @@ You will receive $400 free credit in your Confluent account. This credit expires
 
 ![Create Cluster](assets/create_cluster.png)
 
-### Step 3: Create a Kafka topic
+### 2.2 - Create a Kafka topic
 
 1. From the navigation menu, click **Topics**, and then click **Create topic**.
     - Topic name: “banking.transactions”
@@ -54,21 +53,20 @@ You will receive $400 free credit in your Confluent account. This credit expires
 
 ![Create topic](assets/create_topic.png)
 
-## REST API for Confluent Cloud
+## 3 - REST API for Confluent Cloud
 
-### Step 1: Find the REST endpoint address and cluster ID
+This API will be used by Python scripts to publish messages to Confluent.
+
+### 3.1 - Find the endpoint address and cluster ID
 
 1. Sign in to [Confluent Cloud](https://confluent.cloud).
 2. Navigate to the cluster you want to use, and click **Cluster settings**.
-3. Note the **REST endpoint**.
-4. Note the **Bootstrap server**
-5. Note the **cluster ID**.
+3. Note the **Bootstrap server**
+4. Note the **cluster ID**.
 
 ![Cluster Overview](assets/cluster_overview.png)
 
-### Step 2: Create credentials
-
-#### 1. Create API key
+### 3.2 - Create API key
 
 1. Navigate to **Cluster -> API keys**.
 2. Click **Create key** and follow the prompts:
@@ -76,35 +74,19 @@ You will receive $400 free credit in your Confluent account. This credit expires
     - Description: as desired
 3. Click **Download and continue**
 
-#### 2. Create base64 encoded version
+### 3.3 - Update .env file
 
-MacOS:
+Copy the  following into your .env file:
 
-```sh
-echo -n "<api-key>:<api-secret>" | base64
-```
+  - **Bootstrap server** into `KAFKA_BOOTSTRAP_SERVERS`
+  - **API key** into `KAFKA_API_KEY`
+  - **API secret** into `KAFKA_API_SECRET`
 
-Linux:
+## 4 - Schema Registry API for Confluent Cloud
 
-```sh
-echo -n "<api-key>:<api-secret>" | base64 -w 0
-```
+This API will be used by Python scripts to register topic schemas.
 
-Windows (PowerShell only):
-
-```powershell
-[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("ABCDEFGH123456789:XNCIW93I2L1SQPJSJ823K1LS902KLDFMCZPWEO"))
-```
-
-### Step 3: test - List topics
-
-```sh
-curl -H "Authorization: Basic <BASE64-encoded-key-and-secret>" --request GET --url 'https://<REST-endpoint>/kafka/v3/clusters/<cluster-id>/topics'
-```
-
-## Schema Registry API for Confluent Cloud
-
-### Step 1: Find the Schema Registry endpoint address
+### 4.1 - Find the Schema Registry endpoint address
 
 1. Sign in to [Confluent Cloud](https://confluent.cloud).
 2. Navigate to **Schema Registry**.
@@ -112,9 +94,7 @@ curl -H "Authorization: Basic <BASE64-encoded-key-and-secret>" --request GET --u
 
 ![Cluster Overview](assets/schema_overview.png)
 
-### Step 2: Create credentials
-
-#### 1. Create API key
+### 4.2 - Create API key
 
 1. Click on **API keys**.
 2. Click **Add API key** and follow the prompts:
@@ -126,4 +106,43 @@ curl -H "Authorization: Basic <BASE64-encoded-key-and-secret>" --request GET --u
 3. Click **Create API key**
 4. Click **Download API key**
 
-![Cluster Overview](assets/schema_api_key.png)
+    <img src="assets/schema_api_key.png" alt="Schema API Key" width="370">
+
+### 4.3 - Update .env file
+
+Copy the  following into your .env file:
+
+  - **Public endpoint** into `SCHEMA_REGISTRY_URL`
+  - **API Key** into `SCHEMA_REGISTRY_API_KEY`
+  - **API Secret** into `SCHEMA_REGISTRY_API_SECRET`
+
+
+## 5 - Tableflow Iceberg API for Confluent CLoud
+
+This API will be used by watsonx.data to look read data that resides in the Confluent Iceberg REST Catalog.
+
+### 5.1 - Find the Tableflow endpoint address
+
+1. Navigate to **Tableflow** in **Confluent Cloud Console**.
+2. Note the `Tableflow Iceberg REST Catalog` `REST Catalog Endpoint`
+
+    ![Confluent Tableflow](assets/confluent_tableflow.png)
+
+### 5.2 - Create API key
+
+1. Generate a new API Key and Secret specifically for the Iceberg Catalog.
+    - Click **Manage API keys**
+    - Click **Add API key**
+        - Name: `tableflow_key`
+        - Select account: `My account`
+        - Select key scope: `Tableflow`
+
+          <img src="assets/confluent_tableflow_api_key.png" alt="Confluent Tableflow API Key" width="370">
+
+### 5.3 - Update .env file
+
+Copy the  following into your .env file:
+
+  - **REST Catalog Endpoint** into `TABLEFLOW_ENDPOINT`
+  - **API Key** into `TABLEFLOW_API_KEY`
+  - **API Secret** into `TABLEFLOW_API_SECRET`

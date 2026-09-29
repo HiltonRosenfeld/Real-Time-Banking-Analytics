@@ -49,9 +49,22 @@ cp .env.example .env
 | `KAFKA_API_SECRET` | Confluent Cloud API secret | Kafka streaming |
 | `KAFKA_TOPIC` | Kafka topic to publish to | Kafka streaming (default: `banking.transactions`) |
 
----
+## Quick Start
 
-## Use Case 1 — Generate All Tables Except Transactions
+```bash
+# Activate virtual environemnt
+source .venv/bin/activate
+
+# Generate dimension data: write directly to Astra DB
+python src/data_generator.py --astra
+
+# Generate transactions: load reference data from Astra, stream transactions to Kafka
+python src/transaction_generator.py --load-ref-data-from-db --transactions 1 --publish
+```
+
+## Detailed Usage
+
+### Use Case 1 — Generate All Tables Except Transactions
 
 Use **`src/data_generator.py`**. Transactions are skipped by default — simply
 omit `--transactions`.
@@ -101,9 +114,9 @@ output/
 
 ---
 
-## Use Case 2 — Generate Transactions
+### Use Case 2 — Generate Transactions
 
-### Option A — Batch file of transactions
+#### Option A — Batch file of transactions
 
 Still uses `data_generator.py`. Add `--transactions N` to include the
 transaction table alongside all reference tables.
@@ -126,7 +139,7 @@ python src/data_generator.py \
 python src/data_generator.py --transactions 5000 --astra
 ```
 
-### Option B — Stream transactions to Confluent Kafka
+#### Option B — Stream transactions to Confluent Kafka
 
 Uses **`src/transaction_generator.py`** directly. It generates transactions
 one-by-one at a controlled rate and optionally publishes each to the Kafka topic.
@@ -164,7 +177,7 @@ python src/transaction_generator.py \
     --publish
 ```
 
-#### `transaction_generator.py` flags
+### `transaction_generator.py` flags
 
 | Flag | Type | Default | Description |
 |---|---|---|---|
@@ -182,7 +195,7 @@ python src/transaction_generator.py \
 
 ---
 
-## `data_generator.py` CLI Reference
+### `data_generator.py` CLI Reference
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
@@ -199,7 +212,7 @@ python src/transaction_generator.py \
 
 ---
 
-## Script Comparison
+### Script Comparison
 
 | | `data_generator.py` | `transaction_generator.py` |
 |---|---|---|
