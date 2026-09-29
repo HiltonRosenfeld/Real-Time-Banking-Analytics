@@ -54,7 +54,7 @@ Copy `.env.example` to `.env` and fill in every value:
 
 ### Via Confluent Cloud Console (UI)
 
-1. Open **Confluent Cloud Console → SQL Workspaces**.
+1. Navigate to **SQL Workspaces** in **Confluent Cloud Console**.
 2. Click on **Create new workspace**.
 3. Paste the SQL statement.
 4. Click **Run**.
@@ -68,26 +68,7 @@ MODIFY WATERMARK FOR txn_time AS txn_time - INTERVAL '5' SECOND;
 
 ---
 
-## Step 2 — Create Kafka Topics
-
-Create the dimension topics in Confluent Cloud before running anything.
-
-**Dimension topics** (compacted, used by Flink lookup joins):
-
-```txt
-banking.dimensions.account
-banking.dimensions.branch
-banking.dimensions.customer
-banking.dimensions.employee
-```
-
-> **Note:** *In Advanced Settings, set the dimension topics to `cleanup.policy=compact` so Flink always has the latest value for each key.*
-
-![Create Dimension Topics](assets/confluent_create_dimension_topic.png)
-
----
-
-## Step 3 — Load Dimensions into Kafka
+## Step 2 — Load Dimensions into Kafka
 
 Run once (or whenever dimension data changes materially):
 
@@ -108,7 +89,7 @@ Re-run this script after bulk dimension changes (e.g. new branch added, customer
 
 ---
 
-## Step 4 — Deploy Flink Materialized Tables
+## Step 3 — Deploy Flink Materialized Tables
 
 We use Confluent Flink materialized tables instead of the older manual process of separately creating each of the workflow elements.
 
@@ -140,17 +121,17 @@ Each SQL file in `src/flink/` is a self-contained Flink SQL statement. Deploy th
 
 ---
 
-## Step 5 — Confluent Tableflow + Zero-Copy Data Federation
+## Step 4 — Confluent Tableflow + Zero-Copy Data Federation
 
 The easiest way to integrate WatsonX.Data and Confluent is through Confluent Tableflow. Tableflow automatically materializes Kafka topics into Iceberg open-table formats residing in your cloud storage or in Confluent storage. For this solution we will use Amazon S3.
 
-### 5.1 - Enable Tableflow in Confluent Cloud
+### 4.1 - Enable Tableflow in Confluent Cloud
 
 Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats. Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using Amazon S3 with IAM AssumeRole.
 
 This will require working in both the AWS Console and the Confluent Cloud Console
 
-#### 5.1.1 - Add an S3 Provider Integration
+#### 4.1.1 - Add an S3 Provider Integration
 
 1. Navigate to **Integrations** within your environment in **Confluent Cloud Console**.
 2. Click **Add Integration**
@@ -207,7 +188,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 10. Back in **Confluent Cloud Console**:
     - click **Continue**
 
-#### 5.1.3 - Activate TableFlow
+#### 4.1.2 - Activate TableFlow
 
 1. Navigate to Topics in **Confluent Cloud Console**.
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
@@ -241,7 +222,7 @@ This will require working in both the AWS Console and the Confluent Cloud Consol
 
 7. Repeat this process for each of the *analytics* topics (topics starting with *analytics*).
 
-### 5.2 - Register the Confluent Catalog in IBM watsonx.data
+### 4.2 - Register the Confluent Catalog in IBM watsonx.data
 
 Configure watsonx.data environment to look across to Confluent as a external data platform without actually duplicating or importing the storage footprint.
 
@@ -274,7 +255,7 @@ Configure watsonx.data environment to look across to Confluent as a external dat
 
     ![watsonx.data configure component](assets/watsonx_configure_component.png)
 
-### 5.3 - Associate the Catalog with Your Engines
+### 4.3 - Associate the Catalog with Your Engines
 
 To run SQL queries against your real-time Confluent tables, your query engines need access permissions to this new catalog metadata.
 

@@ -29,7 +29,7 @@ You will receive $400 free credit in your Confluent account. This credit expires
 
 ![Billing](assets/confluent_billing.png)
 
-## 2 - Create a cluster and add a topic
+## 2 - Create a cluster and add topics
 
 ### 2.1 - Create a Kafka cluster
 
@@ -38,20 +38,34 @@ You will receive $400 free credit in your Confluent account. This credit expires
 3. Select an environment to use: **default**
 4. Configure the cluster:
     - Cluster name: **mycluster**
-    - Cluster type: **Standard**
-    - Provider and region: your choice
-    - Uptime SLA: **99.9%** (will consume less of your free credits)
+    - Cluster type: **Basic**
+    - Provider and region: **AWS** - **Ohio (us-east-2)**
 5. Click **Launch Cluster**
 
 ![Create Cluster](assets/create_cluster.png)
 
-### 2.2 - Create a Kafka topic
+### 2.2 - Create Kafka topics
 
-1. From the navigation menu, click **Topics**, and then click **Create topic**.
+#### 2.2.1 - Transaction topic
+
+1. Navigate to **Topics** in **Confluent Cloud Console**
+2. Click **Create topic**.
     - Topic name: “banking.transactions”
-2. Click **Create with defaults**.
+3. Click **Create with defaults**.
 
 ![Create topic](assets/create_topic.png)
+
+#### 2.2.2 - Dimension topics
+
+1. Add each of the following topics:
+   - banking.dimensions.account
+   - banking.dimensions.branch
+   - banking.dimensions.customer
+   - banking.dimensions.employee
+
+  > **Note:** *In Advanced Settings, set the dimension topics to `cleanup.policy=compact` so Flink always has the latest value for each key.*
+
+![Create Dimension Topics](assets/confluent_create_dimension_topic.png)
 
 ## 3 - REST API for Confluent Cloud
 
@@ -59,8 +73,8 @@ This API will be used by Python scripts to publish messages to Confluent.
 
 ### 3.1 - Find the endpoint address and cluster ID
 
-1. Sign in to [Confluent Cloud](https://confluent.cloud).
-2. Navigate to the cluster you want to use, and click **Cluster settings**.
+1. Navigate to your cluster.
+2. Select the **Overview** tab.
 3. Note the **Bootstrap server**
 4. Note the **cluster ID**.
 
@@ -68,11 +82,12 @@ This API will be used by Python scripts to publish messages to Confluent.
 
 ### 3.2 - Create API key
 
-1. Navigate to **Cluster -> API keys**.
-2. Click **Create key** and follow the prompts:
+1. Navigate to your cluster.
+2. Select the **API keys** tab.
+3. Click **Create key** and follow the prompts:
     - Select account: **My Account**
     - Description: as desired
-3. Click **Download and continue**
+4. Click **Download and continue**
 
 ### 3.3 - Update .env file
 
@@ -88,9 +103,8 @@ This API will be used by Python scripts to register topic schemas.
 
 ### 4.1 - Find the Schema Registry endpoint address
 
-1. Sign in to [Confluent Cloud](https://confluent.cloud).
-2. Navigate to **Schema Registry**.
-3. Note the **Public endpoint**.
+1. Navigate to **Schema Registry** (in your Environment e.g. default).
+2. Note the **Public endpoint**.
 
 ![Cluster Overview](assets/schema_overview.png)
 
@@ -123,7 +137,7 @@ This API will be used by watsonx.data to look read data that resides in the Conf
 
 ### 5.1 - Find the Tableflow endpoint address
 
-1. Navigate to **Tableflow** in **Confluent Cloud Console**.
+1. Navigate to **Tableflow** in **Confluent Cloud Console** (in your Cluster e.g. mycluster).
 2. Note the `Tableflow Iceberg REST Catalog` `REST Catalog Endpoint`
 
     ![Confluent Tableflow](assets/confluent_tableflow.png)
