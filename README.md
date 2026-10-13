@@ -43,6 +43,8 @@ See [`README_confluent_cloud.md`](README_confluent_cloud.md) for instructions on
 
 ### Amazon S3 and IAM
 
+>> This step is not needed if you will be using Confluent Cloud Storage
+
 See [`README_amazon_s3.md`](README_amazon_s3.md) for instructions on configuring your S3 bucket and associated IAM permisssions.
 
 ### Banking Data
