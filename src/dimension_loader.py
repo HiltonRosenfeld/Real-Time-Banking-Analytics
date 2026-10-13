@@ -145,13 +145,16 @@ def main():
     print(f"  {len(accounts)} accounts published.")
 
     print("Loading branches...")
-    load_branches(session, producer)
+    branches = load_branches(session, producer)
+    print(f"  {len(branches)} branches published.")
 
     print("Loading customers...")
-    load_customers(session, producer)
+    customers = load_customers(session, producer)
+    print(f"  {len(customers)} customers published.")
 
     print("Loading employees...")
-    load_employees(session, producer)
+    employees = load_employees(session, producer)
+    print(f"  {len(employees)} employees published.")
 
     #print("Seeding active-account counter events...")
     #seed_active_account_counts(producer, accounts)

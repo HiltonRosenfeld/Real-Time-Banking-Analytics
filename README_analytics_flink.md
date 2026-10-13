@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` and fill in every value:
 ### Via Confluent Cloud Console (UI)
 
 1. Navigate to **SQL Workspaces** in **Confluent Cloud Console**.
-2. Click on **Create new workspace**.
+2. Click on **Create new workspace** (or use an existing workspace).
 3. Paste the SQL statement.
 4. Click **Run**.
 
@@ -123,15 +123,24 @@ Each SQL file in `src/flink/` is a self-contained Flink SQL statement. Deploy th
 
 ## Step 4 — Confluent Tableflow + Zero-Copy Data Federation
 
-The easiest way to integrate WatsonX.Data and Confluent is through Confluent Tableflow. Tableflow automatically materializes Kafka topics into Iceberg open-table formats residing in your cloud storage or in Confluent storage. For this solution we will use Amazon S3.
+The easiest way to integrate WatsonX.Data and Confluent is through Confluent Tableflow. Tableflow automatically materializes Kafka topics into Iceberg open-table formats residing in your cloud storage or in Confluent storage. 
+
+For this solution we will show both using Confluent Cloud Storage, and Amazon S3.
 
 ### 4.1 - Enable Tableflow in Confluent Cloud
 
-Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats. Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using Amazon S3 with IAM AssumeRole.
-
->> This will require working in both the AWS Console and the Confluent Cloud Console
+Configure Confluent Cloud to automatically materialize your streaming Kafka topics into Iceberg open-table formats.
 
 #### 4.1.1 - Add an S3 Provider Integration
+
+>> This step is not necessary with Confluent Cloud Storage
+
+<details>
+  <summary><b>Amazon S3</b></summary>
+
+Confluent currently supports AWS, GCP, Microsft Azure. In our case, we will be using Amazon S3 with IAM AssumeRole.
+
+>> This will require working in both the AWS Console and the Confluent Cloud Console
 
 1. Navigate to **Integrations** within your environment in **Confluent Cloud Console**.
 2. Click **Add Integration**
@@ -189,12 +198,18 @@ Configure Confluent Cloud to automatically materialize your streaming Kafka topi
 10. Back in **Confluent Cloud Console**:
     - click **Continue**
 
+</details>
+
 #### 4.1.2 - Activate TableFlow
 
 1. Navigate to Topics in **Confluent Cloud Console**.
+
 2. Click on **Enable Tableflow** for each of the *analytics* topics.
 
     ![Enable TableFlow](assets/confluent-topics-listing.png)
+
+<details>
+<summary><b>Amazon S3</b></summary>
 
 3. Enable Tableflow
 
@@ -202,7 +217,6 @@ Configure Confluent Cloud to automatically materialize your streaming Kafka topi
     - Click **Configure custom storage**.
 
       <img src="assets/confluent-enable-tableflow.png" alt="Custom Storage" width="250">
-
 
 4. Choose where to store your Tableflow data
 
@@ -223,14 +237,37 @@ Configure Confluent Cloud to automatically materialize your streaming Kafka topi
 
 7. Repeat this process for each of the *analytics* topics (topics starting with *analytics*).
 
+</details>
+<details>
+<summary><b>Confluent Cloud Storage</b></summary>
+
+3. Enable Tableflow
+
+    - Choose **Iceberg** as your table format.
+    - Click **Use Confluent storage**.
+
+      <img src="assets/confluent_enable_tableflow_storage.png" alt="Custom Storage" width="250">
+
+4. Click **Launch**
+
+5. Repeat this process for each of the *analytics* topics (topics starting with *analytics*).
+
+</details>
+
+
+
 ### 4.2 - Register the Confluent Catalog in IBM watsonx.data
 
 Configure watsonx.data environment to look across to Confluent as a external data platform without actually duplicating or importing the storage footprint.
 
 1. Navigate to the Infrastructure manager tab in your IBM watsonx.data instance console.
+
+<details>
+<summary><b>Amazon S3</b></summary>
+
 2. Click Add Component and select **Custom** from Data Sources.
 
-    ![watsonx.data add component](assets/watsonx_add_component.png)
+    ![watsonx.data add component](assets/watsonx_add_component_custom.png)
 
 3. Enter a display name (e.g., confluent_tableflow).
 4. In the Properties section, add the following properties:
@@ -255,6 +292,39 @@ Configure watsonx.data environment to look across to Confluent as a external dat
 6. Click **Create**.
 
     ![watsonx.data configure component](assets/watsonx_configure_component.png)
+
+</details>
+<details>
+<summary><b>Confluent Cloud Storage</b></summary>
+
+2. Click Add Component and select **Confluent** from Data Sources.
+
+    ![watsonx.data add component](assets/watsonx_add_component_confluent.png)
+
+3. Enter the following details:
+    - Display name: e.g., confluent_tableflow
+    - Description: Optional description.
+    - Confluent URL: `Your Confluent Tableflow Endpoint`
+    - Client ID: `Your Confluent Tableflow Client ID`
+    - Client secret: `Your Confluent Tableflow Client Secret`
+    - Catalog name: name for the catalog that is created in watsonx.data (e.g. confluent_tableflow_catalog).
+
+    ![watsonx.data configure component](assets/watsonx_add_confluent.png)
+
+4. Click **Next**.
+
+watsonx.data validates your credentials with Confluent Cloud before proceeding. If validation fails, verify your Confluent URL, Client ID, and Client secret.
+
+5. On the Edit data objects page, select the tables to import:
+
+  ![watsonx.data configure objects](assets/watsonx_confluent_data_objects.png)
+
+
+6. Click Save.
+
+7. Click Done.
+
+</details>
 
 ### 4.3 - Associate the Catalog with Your Engines
 

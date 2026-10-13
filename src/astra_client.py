@@ -18,6 +18,7 @@ def connect():
         ASTRA_DB_APPLICATION_TOKEN
         ASTRA_KEYSPACE
     """
+    print("Establishing connection to Astra DB...")
     cloud_config = {"secure_connect_bundle": os.environ["ASTRA_SECURE_BUNDLE_PATH"]}
     auth_provider = PlainTextAuthProvider("token", os.environ["ASTRA_DB_APPLICATION_TOKEN"])
     cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)

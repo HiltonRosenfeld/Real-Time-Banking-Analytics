@@ -34,6 +34,7 @@ def _iso_datetime(value):
 
 
 def load_reference_data(session):
+    print("Loading reference data from Astra DB...")
     branches = [
         Branch(
             branch_id=str(row.branch_id),

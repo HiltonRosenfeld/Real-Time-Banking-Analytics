@@ -181,8 +181,8 @@ def _dt_in_past_ms(days_back: int = 365) -> int:
     return int(dt.timestamp() * 1000)
 
 
-def _sample_amount(mu: float = 4.5, sigma: float = 1.5,
-                   lo: float = 1.0, hi: float = 150_000.0) -> float:
+def _sample_amount(mu: float = 5.5, sigma: float = 2.5,
+                   lo: float = 10.0, hi: float = 150_000.0) -> float:
     raw = random.lognormvariate(mu, sigma)
     return round(max(lo, min(raw, hi)), 2)
 
